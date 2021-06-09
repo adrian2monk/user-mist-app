@@ -3,16 +3,19 @@
   "version": "0.0.1",
   "sources": {
     "dir" : "src",
-    "subdirs" : true
+    "subdirs": [{ "dir": "__tests__", "type": "dev" }]
   },
   "package-specs": {
-    "module": "commonjs",
+    "module": "es6",
     "in-source": true
   },
   "suffix": ".bs.js",
+  "namespace": true,
   "bs-dependencies": [
+    "@rescript/react"
   ],
   "warnings": {
     "error" : "+101"
   },
+  "reason": { "react-jsx": 3 }
 }

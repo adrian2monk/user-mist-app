@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "react": "./react.js",
+    "react-dom": "./react-dom.js",
+    "rescript/lib/es6/belt_Option.js": "./rescript/lib/es6/belt_Option.js",
+    "rescript/lib/es6/caml_option.js": "./rescript/lib/es6/caml_option.js",
+    "rescript/lib/es6/curry.js": "./rescript/lib/es6/curry.js"
+  }
+}
