@@ -1,3 +1,5 @@
+const rollupPluginNodePolyfills = require('rollup-plugin-polyfill-node');
+
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
   mount: {
@@ -12,6 +14,10 @@ module.exports = {
   ],
   packageOptions: {
     /* ... */
+    polyfillNode: false,
+    rollup: {
+      plugins: [rollupPluginNodePolyfills()],
+    },
   },
   devOptions: {
     /* ... */

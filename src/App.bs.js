@@ -2,50 +2,109 @@
 
 import * as Curry from "rescript/lib/es6/curry.js";
 import * as React from "react";
-import LogoSvg from "./logo.svg";
-
-var logo = LogoSvg;
+import FuseJs from "fuse.js";
+import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
+import * as Firestore from "firebase/firestore";
 
 import './App.css';
 ;
 
+function App$ServiceTile(Props) {
+  var item = Props.item;
+  return React.createElement("p", {
+              key: item.id,
+              className: "myLabel"
+            }, item.desc);
+}
+
+var ServiceTile = {
+  make: App$ServiceTile
+};
+
 function App(Props) {
   var match = React.useState(function () {
-        return 0;
+        return [];
       });
-  var setCount = match[1];
+  var setAll = match[1];
+  var all = match[0];
+  var match$1 = React.useState(function () {
+        return /* Empty */0;
+      });
+  var setHits = match$1[1];
+  var hits = match$1[0];
+  var db = Firestore.getFirestore();
+  var onChange = function (e) {
+    var q = e.target.value;
+    if (q === "") {
+      return Curry._1(setHits, (function (param) {
+                    return /* Empty */0;
+                  }));
+    }
+    var options = {
+      includeScore: true,
+      keys: [
+        "categories",
+        "desc",
+        "expert.name"
+      ]
+    };
+    var f = new FuseJs(all, options);
+    var h = f.search(q);
+    return Curry._1(setHits, (function (param) {
+                  return /* Filtered */{
+                          _0: Belt_Array.map(h, (function (o) {
+                                  return o.item;
+                                }))
+                        };
+                }));
+  };
+  var searchHits = hits ? hits._0 : all;
   React.useEffect((function () {
-          var intervalId = setInterval((function (param) {
-                  return Curry._1(setCount, (function (count) {
-                                return count + 1;
-                              }));
-                }), 100);
-          return (function (param) {
-                    clearInterval(intervalId);
-                    
-                  });
+          Firestore.getDocs(Firestore.collection(db, "services")).then(function (querySnapshot) {
+                if (!querySnapshot.empty) {
+                  var results = Belt_Array.map(querySnapshot.docs, (function (d) {
+                          var data = d.data({
+                                serverTimestamps: "none"
+                              });
+                          return {
+                                  categories: data.categories,
+                                  expert: data.expert,
+                                  desc: data.desc,
+                                  duration: data.duration,
+                                  type_: data.type_,
+                                  price: data.price,
+                                  id: d.id
+                                };
+                        }));
+                  Curry._1(setAll, (function (param) {
+                          return results;
+                        }));
+                }
+                return Promise.resolve(undefined);
+              });
+          
         }), []);
   return React.createElement("div", {
               className: "App"
             }, React.createElement("header", {
                   className: "App-header"
-                }, React.createElement("img", {
-                      className: "App-logo",
-                      alt: "logo",
-                      src: logo
-                    }), React.createElement("p", undefined, "Edit ", React.createElement("code", undefined, "src/App.jsx"), " and save to reload."), React.createElement("p", undefined, "Page has been open for ", React.createElement("code", undefined, (match[0] / 10).toFixed(1)), " seconds"), React.createElement("a", {
-                      className: "App-link",
-                      href: "https://reactjs.org",
-                      rel: "noopener noreferrer",
-                      target: "_blank"
-                    }, "Learn React")));
+                }, React.createElement("input", {
+                      type: "search",
+                      onChange: onChange
+                    })), React.createElement("section", {
+                  className: "App-results"
+                }, Belt_Array.map(searchHits, (function (item) {
+                        return React.createElement(App$ServiceTile, {
+                                    item: item
+                                  });
+                      }))));
 }
 
 var make = App;
 
 export {
-  logo ,
+  ServiceTile ,
   make ,
   
 }
-/* logo Not a pure module */
+/*  Not a pure module */

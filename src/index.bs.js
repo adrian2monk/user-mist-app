@@ -4,10 +4,16 @@ import * as React from "react";
 import * as ReactDom from "react-dom";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Caml_option from "rescript/lib/es6/caml_option.js";
+import * as App from "firebase/app";
+import * as FirebaseConfigJs from "./firebaseConfig.js";
 import * as App$RescriptProjectTemplate from "./App.bs.js";
 
 import './index.css';
 ;
+
+var config = FirebaseConfigJs.firebaseConfig;
+
+App.initializeApp(config);
 
 ReactDom.render(React.createElement(React.StrictMode, {
           children: React.createElement(App$RescriptProjectTemplate.make, {})
@@ -18,6 +24,7 @@ if (import.meta.hot) {
 }
 
 export {
+  config ,
   
 }
 /*  Not a pure module */
