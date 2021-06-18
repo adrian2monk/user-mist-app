@@ -11,10 +11,22 @@ import './App.css';
 
 function App$ServiceTile(Props) {
   var item = Props.item;
-  return React.createElement("p", {
-              key: item.id,
-              className: "myLabel"
-            }, item.desc);
+  var currencySettings = Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP"
+      });
+  return React.createElement("article", {
+              className: "Service"
+            }, React.createElement("figure", {
+                  className: "Service-author"
+                }, React.createElement("img", {
+                      alt: "Expert Picture Url",
+                      src: item.expert.picture_url
+                    })), React.createElement("h2", undefined, item.expert.name), React.createElement("p", undefined, item.desc), React.createElement("p", {
+                  className: "Service-label"
+                }, String(item.duration)), React.createElement("footer", undefined, React.createElement("p", {
+                      className: "Service-price"
+                    }, "Desde " + currencySettings.format(item.price / 100.0))));
 }
 
 var ServiceTile = {
@@ -91,11 +103,12 @@ function App(Props) {
                 }, React.createElement("input", {
                       type: "search",
                       onChange: onChange
-                    })), React.createElement("section", {
+                    })), React.createElement("main", {
                   className: "App-results"
                 }, Belt_Array.map(searchHits, (function (item) {
                         return React.createElement(App$ServiceTile, {
-                                    item: item
+                                    item: item,
+                                    key: item.id
                                   });
                       }))));
 }

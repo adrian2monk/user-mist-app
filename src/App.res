@@ -16,6 +16,14 @@ type service = {
   id: string,
 }
 
+type state = 
+  | Empty 
+  | Filtered(array<service>)
+
+type intl
+
+@scope("Intl") @val external numberFormat: ([#"es-CO" | #"es-MX" | #"en-US"], 'a) => intl = "NumberFormat"
+
 @new @module("fuse.js") external fuse: (array<'a>, 'b) => 'c = "default"
 
 @module("firebase/firestore") external firestore: unit => 'a = "getFirestore"
@@ -28,14 +36,27 @@ type service = {
 
 @send external search: ('c, string) => array<'a> = "search"
 
-type state = 
-  | Empty 
-  | Filtered(array<service>)
+@send external format: (intl, float) => string = "format"
 
 module ServiceTile = {
   @react.component
   let make = (~item: service) => {
-    <p key={item.id} className="myLabel"> {React.string(item.desc)} </p>
+    let currencySettings = numberFormat(#"es-CO", {
+      "style": "currency"
+      "currency": "COP"
+    })
+
+    <article className="Service">
+      <figure className="Service-author">
+        <img src={item.expert.picture_url} alt="Expert Picture Url" />
+      </figure>
+      <h2>{React.string(item.expert.name)}</h2>
+      <p>{React.string(item.desc)}</p>
+      <p className="Service-label">{React.string(Belt.Int.toString(item.duration))}</p>
+      <footer>
+        <p className="Service-price">{React.string("Desde " ++ format(currencySettings, Belt.Int.toFloat(item.price) /. 100.0))}</p>
+      </footer>
+    </article>
   }
 }
 
@@ -92,6 +113,6 @@ let make = () => {
     <header className="App-header">
       <input type_="search" onChange />
     </header>
-    <section className="App-results">{Belt.Array.map(searchHits, item => <ServiceTile item />)->React.array}</section>
+    <main className="App-results">{Belt.Array.map(searchHits, item => <ServiceTile key={item.id} item />)->React.array}</main>
   </div>
 }
