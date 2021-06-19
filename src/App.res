@@ -1,118 +1,12 @@
 %%raw(`import './App.css';`)
 
-type user = {
-  id: string,
-  name: string,
-  picture_url: string,
-}
-
-type service = {
-  categories: array<string>,
-  expert: user,
-  desc: string,
-  duration: int,
-  type_: string,
-  price: int,
-  id: string,
-}
-
-type state = 
-  | Empty 
-  | Filtered(array<service>)
-
-type intl
-
-@scope("Intl") @val external numberFormat: ([#"es-CO" | #"es-MX" | #"en-US"], 'a) => intl = "NumberFormat"
-
-@new @module("fuse.js") external fuse: (array<'a>, 'b) => 'c = "default"
-
-@module("firebase/firestore") external firestore: unit => 'a = "getFirestore"
-
-@module("firebase/firestore") external collection: (. 'a, string) => 'b = "collection"
-
-@module("firebase/firestore") external doc: (. 'b) => Js.Promise.t<'c> = "getDocs"
-
-@send external data: ('c, 'd) => service = "data"
-
-@send external search: ('c, string) => array<'a> = "search"
-
-@send external format: (intl, float) => string = "format"
-
-module ServiceTile = {
-  @react.component
-  let make = (~item: service) => {
-    let currencySettings = numberFormat(#"es-CO", {
-      "style": "currency"
-      "currency": "COP"
-    })
-
-    <article className="Service">
-      <figure className="Service-author">
-        <img src={item.expert.picture_url} alt="Expert Picture Url" />
-      </figure>
-      <h2>{React.string(item.expert.name)}</h2>
-      <p>{React.string(item.desc)}</p>
-      <p className="Service-label">{React.string(Belt.Int.toString(item.duration))}</p>
-      <footer>
-        <p className="Service-price">{React.string("Desde " ++ format(currencySettings, Belt.Int.toFloat(item.price) /. 100.0))}</p>
-      </footer>
-    </article>
-  }
-}
-
 @react.component
 let make = () => {
-  let (all, setAll) = React.useState(_ => []) 
-
-  let (hits, setHits) = React.useState(_ => Empty) 
-
-  let db = firestore()
-
-  let onChange = (e) => {
-    let q = ReactEvent.Form.target(e)["value"]
-    if q == "" {
-      setHits(_ => Empty)
-    } else {
-      let options = {
-        "includeScore": true,
-        "keys": ["categories", "desc", "expert.name"]
-      }
-      switch hits {
-      | Empty
-      | Filtered(_) => {
-          let f = fuse(all, options)
-          let h = search(f, q)
-          setHits(_ => Filtered(Belt.Array.map(h, o => o["item"])))
-        }
-      }
-    }
+  let url = RescriptReactRouter.useUrl()
+  
+  switch url.path {
+    // | list{"service", id, "booking"} => <ServiceBook id />
+    // | _ => <ServiceSearch/>
+    | _ => <ServiceBook/>
   }
-
-  let searchHits = switch hits {
-  | Empty => all
-  | Filtered(result) => result
-  }
-
-  React.useEffect0(() => {
-    Js.Promise.then_((querySnapshot) => {
-      if !querySnapshot["empty"] {
-        let results = Belt.Array.map(querySnapshot["docs"], d => {
-          let data = data(d, {
-            "serverTimestamps": "none"
-          })
-          {...data, id: d["id"]}
-        })
-        setAll(_ => results)
-      }
-      Js.Promise.resolve(())
-    }, doc(. collection(. db, "services")))->ignore
-    None
-  })
-
-  <div className="App">
-    <header className="App-header">
-      <input type_="search" onChange />
-    </header>
-    <main className="App-results">{Belt.Array.map(searchHits, item => <ServiceTile key={item.id} item />)->React.array}</main>
-  </div>
 }

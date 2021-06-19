@@ -1,0 +1,82 @@
+
+.Book {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #E5E5E5;
+}
+.Book-card {
+  padding: 1em;
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+}
+.Calendar-month {
+  color: #4F4F4F;
+  font-weight: 600;
+  font-size: 1.14rem;
+  text-align: center;
+  line-height: 1.5em;
+  letter-spacing: 0.03em;
+}
+.Calendar-dow {
+  color: #606060;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5em;
+  letter-spacing: 0.03em;
+}
+.Calendar-grid {
+  color: #656672;
+  font-size: .78rem;
+  line-height: 1.09em;
+  letter-spacing: 0.05em;
+}
+.Calendar-dow,
+.Calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.Calendar-grid button {
+  outline: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  width: 4.5ch;
+  height: 4.5ch;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background .5s ease;
+}
+.Calendar-grid button:hover,
+.Calendar-grid button:focus {
+  background-color: #FFF4E4;
+}
+.Calendar-grid button:active,
+.Calendar-grid button.Day-selected {
+  background-color: #0D919D;
+  color: #FFFFFF;
+}
+.Calendar-grid button.Day-sun:first-child {
+  grid-column: 1;
+}
+.Calendar-grid button.Day-mon:first-child {
+  grid-column: 2;
+}
+.Calendar-grid button.Day-tue:first-child {
+  grid-column: 3;
+}
+.Calendar-grid button.Day-wed:first-child {
+  grid-column: 4;
+}
+.Calendar-grid button.Day-thu:first-child {
+  grid-column: 5;
+}
+.Calendar-grid button.Day-fri:first-child {
+  grid-column: 6;
+}
+.Calendar-grid button.Day-sat:first-child {
+  grid-column: 7;
+}
