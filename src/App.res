@@ -5,8 +5,7 @@ let make = () => {
   let url = RescriptReactRouter.useUrl()
   
   switch url.path {
-    // | list{"service", id, "booking"} => <ServiceBook id />
-    // | _ => <ServiceSearch/>
-    | _ => <ServiceBook/>
+    | list{"service", serviceId, "booking"} => <ServiceBook serviceId />
+    | _ => <ServiceSearch/>
   }
 }

@@ -2,16 +2,21 @@
 .Book {
   width: 100%;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   background-color: #E5E5E5;
 }
 .Book-card {
+  display: grid;
+  grid-template: 1fr auto / auto 1fr auto;
+
   padding: 1em;
   border-radius: 20px;
   background-color: #FFFFFF;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+}
+.Book-card footer {
+  grid-column: 1 / 4;
 }
 .Calendar-month {
   color: #4F4F4F;
@@ -25,6 +30,7 @@
   color: #606060;
   font-size: 1rem;
   font-weight: 600;
+  text-align: center;
   line-height: 1.5em;
   letter-spacing: 0.03em;
 }
@@ -44,8 +50,8 @@
   appearance: none;
   background: transparent;
   border: 0;
-  width: 4.5ch;
-  height: 4.5ch;
+  width: 5ch;
+  height: 5ch;
   border-radius: 50%;
   cursor: pointer;
   transition: background .5s ease;
@@ -79,4 +85,23 @@
 }
 .Calendar-grid button.Day-sat:first-child {
   grid-column: 7;
+}
+button.Slot {
+  outline: none;
+  appearance: none;
+  background: transparent;
+  padding: .5em 1em;
+  border: 0.6px solid #606060;
+  box-sizing: border-box;
+  border-radius: 14em;
+  cursor: pointer;
+}
+button.Slot:hover,
+button.Slot:focus {
+  background-color: #FFF4E4;
+}
+button.Slot:active,
+button.Slot.Slot-selected {
+  background-color: #0D919D;
+  color: #FFFFFF;
 }

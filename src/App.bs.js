@@ -3,13 +3,28 @@
 import * as React from "react";
 import * as RescriptReactRouter from "@rescript/react/src/RescriptReactRouter.bs.js";
 import * as ServiceBook$RescriptProjectTemplate from "./ServiceBook.bs.js";
+import * as ServiceSearch$RescriptProjectTemplate from "./ServiceSearch.bs.js";
 
 import './App.css';
 ;
 
 function App(Props) {
-  RescriptReactRouter.useUrl(undefined, undefined);
-  return React.createElement(ServiceBook$RescriptProjectTemplate.make, {});
+  var url = RescriptReactRouter.useUrl(undefined, undefined);
+  var match = url.path;
+  if (match && match.hd === "service") {
+    var match$1 = match.tl;
+    if (match$1) {
+      var match$2 = match$1.tl;
+      if (match$2 && match$2.hd === "booking" && !match$2.tl) {
+        return React.createElement(ServiceBook$RescriptProjectTemplate.make, {
+                    serviceId: match$1.hd
+                  });
+      }
+      
+    }
+    
+  }
+  return React.createElement(ServiceSearch$RescriptProjectTemplate.make, {});
 }
 
 var make = App;

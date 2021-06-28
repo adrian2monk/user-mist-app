@@ -40,13 +40,13 @@ type intl
 @send external format: (intl, float) => string = "format"
 
 module ServiceTile = {
+  let currencySettings = numberFormat(#"es-CO", {
+    "style": "currency"
+    "currency": "COP"
+  })
+
   @react.component
   let make = (~item: service) => {
-    let currencySettings = numberFormat(#"es-CO", {
-      "style": "currency"
-      "currency": "COP"
-    })
-
     let duration = if item.duration < 60 {
       Belt.Int.toString(item.duration) ++ "m"
     } else {

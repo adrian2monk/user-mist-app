@@ -10,12 +10,13 @@ import * as RescriptReactRouter from "@rescript/react/src/RescriptReactRouter.bs
 import './ServiceSearch.css';
 ;
 
+var currencySettings = Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP"
+    });
+
 function ServiceSearch$ServiceTile(Props) {
   var item = Props.item;
-  var currencySettings = Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP"
-      });
   var duration = item.duration < 60 ? String(item.duration) + "m" : String(item.duration / 60 | 0) + "h";
   var onClick = function (param) {
     return RescriptReactRouter.push("/service/" + item.id + "/booking");
@@ -36,6 +37,7 @@ function ServiceSearch$ServiceTile(Props) {
 }
 
 var ServiceTile = {
+  currencySettings: currencySettings,
   make: ServiceSearch$ServiceTile
 };
 
