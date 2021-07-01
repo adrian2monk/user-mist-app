@@ -95,6 +95,7 @@ button.Slot {
   box-sizing: border-box;
   border-radius: 14em;
   cursor: pointer;
+  transition: background .5s ease;
 }
 button.Slot:hover,
 button.Slot:focus {

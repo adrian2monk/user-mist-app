@@ -39,12 +39,14 @@ type intl
 
 @send external format: (intl, float) => string = "format"
 
-module ServiceTile = {
-  let currencySettings = numberFormat(#"es-CO", {
-    "style": "currency"
-    "currency": "COP"
-  })
+let currencySettings = numberFormat(#"es-CO", {
+  "style": "currency"
+  "currency": "COP"
+})
 
+let currency = format(currencySettings)
+
+module ServiceTile = {
   @react.component
   let make = (~item: service) => {
     let duration = if item.duration < 60 {
@@ -65,7 +67,7 @@ module ServiceTile = {
       <p>{React.string(item.desc)}</p>
       <p className="Service-label">{React.string("Tiempo " ++ duration)}</p>
       <footer>
-        <p className="Service-price">{React.string("Desde " ++ format(currencySettings, Belt.Int.toFloat(item.price) /. 100.0))}</p>
+        <p className="Service-price">{React.string("Desde " ++ currency(Belt.Int.toFloat(item.price) /. 100.0))}</p>
       </footer>
     </article>
   }

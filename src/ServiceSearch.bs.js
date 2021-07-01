@@ -15,6 +15,10 @@ var currencySettings = Intl.NumberFormat("es-CO", {
       currency: "COP"
     });
 
+function currency(param) {
+  return currencySettings.format(param);
+}
+
 function ServiceSearch$ServiceTile(Props) {
   var item = Props.item;
   var duration = item.duration < 60 ? String(item.duration) + "m" : String(item.duration / 60 | 0) + "h";
@@ -37,7 +41,6 @@ function ServiceSearch$ServiceTile(Props) {
 }
 
 var ServiceTile = {
-  currencySettings: currencySettings,
   make: ServiceSearch$ServiceTile
 };
 
@@ -124,6 +127,8 @@ function ServiceSearch(Props) {
 var make = ServiceSearch;
 
 export {
+  currencySettings ,
+  currency ,
   ServiceTile ,
   make ,
   

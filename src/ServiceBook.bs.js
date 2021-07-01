@@ -8,28 +8,22 @@ import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Caml_int32 from "rescript/lib/es6/caml_int32.js";
 import * as Locale from "date-fns/locale";
 import * as Firestore from "firebase/firestore";
+import * as ServiceSearch$RescriptProjectTemplate from "./ServiceSearch.bs.js";
 
 import './ServiceBook.css';
 ;
 
-function ServiceBook(Props) {
-  var serviceId = Props.serviceId;
-  var match = React.useState(function () {
-        return /* Empty */0;
-      });
-  var setProduct = match[1];
-  var product = match[0];
-  var match$1 = React.useState(function () {
-        return new Date();
-      });
-  var date = match$1[0];
-  var currencySettings = Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP"
-      });
-  var esOptions = {
-    locale: Locale.es
-  };
+var esOptions = {
+  locale: Locale.es
+};
+
+function esFormatDate(d, f) {
+  return DateFns.format(d, f, esOptions);
+}
+
+function ServiceBook$ServiceCalendar(Props) {
+  var date = Props.date;
+  var onSelect = Props.onSelect;
   var month = DateFns.format(date, "MMMM y", esOptions);
   var start = DateFns.startOfMonth(date);
   var startClass = DateFns.isSunday(start) ? "Day-sun" : (
@@ -58,6 +52,156 @@ function ServiceBook(Props) {
   var days = Belt_Array.makeByU(DateFns.getDaysInMonth(date), (function (i) {
           return DateFns.addDays(start, i);
         }));
+  return React.createElement("section", {
+              className: "Calendar"
+            }, React.createElement("h3", {
+                  className: "Calendar-month"
+                }, month.charAt(0).toUpperCase() + month.slice(1)), React.createElement("div", {
+                  className: "Calendar-dow"
+                }, React.createElement("div", undefined, "Dom"), React.createElement("div", undefined, "Lun"), React.createElement("div", undefined, "Mar"), React.createElement("div", undefined, "Mie"), React.createElement("div", undefined, "Jue"), React.createElement("div", undefined, "Vie"), React.createElement("div", undefined, "Sab")), React.createElement("div", {
+                  className: "Calendar-grid"
+                }, Belt_Array.map(days, (function (d) {
+                        return React.createElement("button", {
+                                    key: DateFns.getDayOfYear(d).toString(),
+                                    className: dowClass(d),
+                                    onClick: (function (param) {
+                                        return Curry._1(onSelect, d);
+                                      })
+                                  }, React.createElement("time", {
+                                        dateTime: DateFns.format(d, "y-MM-dd", esOptions)
+                                      }, DateFns.format(d, "d", esOptions)));
+                      }))));
+}
+
+var ServiceCalendar = {
+  make: ServiceBook$ServiceCalendar
+};
+
+function ServiceBook$ServiceSlots(Props) {
+  var date = Props.date;
+  var duration = Props.duration;
+  var spots = Props.spots;
+  var onSelect = Props.onSelect;
+  var value = Belt_Array.getBy(spots, (function (param) {
+          var l = param.label;
+          if (DateFns.isSunday(date)) {
+            return l === "Dom";
+          } else if (DateFns.isMonday(date)) {
+            return l === "Lun";
+          } else if (DateFns.isTuesday(date)) {
+            return l === "Mar";
+          } else if (DateFns.isWednesday(date)) {
+            return l === "Mie";
+          } else if (DateFns.isThursday(date)) {
+            return l === "Jue";
+          } else if (DateFns.isFriday(date)) {
+            return l === "Vie";
+          } else if (DateFns.isSaturday(date)) {
+            return l === "Sab";
+          } else {
+            return false;
+          }
+        }));
+  if (value === undefined) {
+    return "Service is not available today";
+  }
+  var from = DateFns.parse(value.from, "H:mm", date);
+  var to_ = DateFns.millisecondsToMinutes(DateFns.parse(value.to, "H:mm", date).getTime());
+  var slots = Caml_int32.div(to_ - DateFns.millisecondsToMinutes(from.getTime()) | 0, duration);
+  var timeFrom = function (i) {
+    return DateFns.add(from, {
+                minutes: Math.imul(i, duration)
+              });
+  };
+  return Belt_Array.makeBy(slots, (function (i) {
+                return React.createElement("button", {
+                            key: i.toString(),
+                            className: "Slot" + (
+                              DateFns.isEqual(date, timeFrom(i)) ? " Slot-selected" : ""
+                            ),
+                            onClick: (function (param) {
+                                return Curry._1(onSelect, timeFrom(i));
+                              })
+                          }, React.createElement("time", {
+                                dateTime: DateFns.format(timeFrom(i), "Pp", esOptions)
+                              }, DateFns.format(timeFrom(i), "h:mm bbb", esOptions)));
+              }));
+}
+
+var ServiceSlots = {
+  make: ServiceBook$ServiceSlots
+};
+
+function ServiceBook$ServicePreview(Props) {
+  var item = Props.item;
+  return React.createElement(React.Fragment, undefined, React.createElement("img", {
+                  style: {
+                    borderRadius: "50%",
+                    flex: "0 1 10%"
+                  },
+                  alt: "Expert Picture Url",
+                  src: item.expert.picture_url
+                }), React.createElement("h3", {
+                  style: {
+                    flex: "0 1 10%"
+                  }
+                }, item.expert.name), React.createElement("p", {
+                  style: {
+                    flex: "1 1 100%"
+                  }
+                }, item.desc), React.createElement("p", {
+                  style: {
+                    fontSize: ".8em",
+                    marginLeft: ".5em",
+                    flex: "1 1 10%"
+                  }
+                }, "Tiempo " + DateFns.formatDuration({
+                      minutes: item.duration
+                    }, esOptions)), React.createElement("p", {
+                  style: {
+                    fontSize: ".8em",
+                    marginLeft: ".5em",
+                    flex: "1 1 10%"
+                  }
+                }, "Desde " + ServiceSearch$RescriptProjectTemplate.currency(item.price / 100.0)));
+}
+
+var ServicePreview = {
+  make: ServiceBook$ServicePreview
+};
+
+function ServiceBook(Props) {
+  var serviceId = Props.serviceId;
+  var match = React.useState(function () {
+        return /* Empty */0;
+      });
+  var setProduct = match[1];
+  var product = match[0];
+  var match$1 = React.useState(function () {
+        return false;
+      });
+  var setBooked = match$1[1];
+  var match$2 = React.useState(function () {
+        return new Date();
+      });
+  var setDate = match$2[1];
+  var date = match$2[0];
+  var onSelectDate = function (d) {
+    Curry._1(setBooked, (function (param) {
+            return false;
+          }));
+    return Curry._1(setDate, (function (param) {
+                  return d;
+                }));
+  };
+  var onSelectSlot = function (d) {
+    Curry._1(setBooked, (function (param) {
+            return true;
+          }));
+    return Curry._1(setDate, (function (param) {
+                  return d;
+                }));
+  };
   var db = Firestore.getFirestore();
   React.useEffect((function () {
           Curry._1(setProduct, (function (param) {
@@ -90,87 +234,6 @@ function ServiceBook(Props) {
               });
           
         }), []);
-  var tmp;
-  if (typeof product === "number") {
-    tmp = product !== 0 ? "Loading..." : "Service preview and input data";
-  } else {
-    var item = product._0;
-    tmp = React.createElement(React.Fragment, undefined, React.createElement("img", {
-              style: {
-                borderRadius: "50%",
-                flex: "0 1 10%"
-              },
-              alt: "Expert Picture Url",
-              src: item.expert.picture_url
-            }), React.createElement("h3", {
-              style: {
-                flex: "0 1 10%"
-              }
-            }, item.expert.name), React.createElement("p", {
-              style: {
-                flex: "1 1 100%"
-              }
-            }, item.desc), React.createElement("p", {
-              style: {
-                fontSize: ".8em",
-                marginLeft: ".5em",
-                flex: "1 1 10%"
-              }
-            }, "Tiempo " + DateFns.formatDuration({
-                  minutes: item.duration
-                }, esOptions)), React.createElement("p", {
-              style: {
-                fontSize: ".8em",
-                marginLeft: ".5em",
-                flex: "1 1 10%"
-              }
-            }, "Desde " + currencySettings.format(item.price / 100.0)));
-  }
-  var tmp$1;
-  if (typeof product === "number") {
-    tmp$1 = product !== 0 ? "Loading..." : "Available spots";
-  } else {
-    var duration = product._0.duration;
-    var value = Belt_Array.getBy(product._1, (function (param) {
-            var l = param.label;
-            if (DateFns.isSunday(date)) {
-              return l === "Dom";
-            } else if (DateFns.isMonday(date)) {
-              return l === "Lun";
-            } else if (DateFns.isTuesday(date)) {
-              return l === "Mar";
-            } else if (DateFns.isWednesday(date)) {
-              return l === "Mie";
-            } else if (DateFns.isThursday(date)) {
-              return l === "Jue";
-            } else if (DateFns.isFriday(date)) {
-              return l === "Vie";
-            } else if (DateFns.isSaturday(date)) {
-              return l === "Sab";
-            } else {
-              return false;
-            }
-          }));
-    if (value !== undefined) {
-      var from = DateFns.parse(value.from, "H:mm", new Date());
-      var to_ = DateFns.millisecondsToMinutes(DateFns.parse(value.to, "H:mm", new Date()).getTime());
-      var slots = Caml_int32.div(to_ - DateFns.millisecondsToMinutes(from.getTime()) | 0, duration);
-      tmp$1 = Belt_Array.makeBy(slots, (function (i) {
-              return React.createElement("button", {
-                          key: i.toString(),
-                          className: "Slot"
-                        }, React.createElement("time", {
-                              dateTime: DateFns.format(DateFns.add(from, {
-                                        minutes: Math.imul(i, duration)
-                                      }), "Pp", esOptions)
-                            }, DateFns.format(DateFns.add(from, {
-                                      minutes: Math.imul(i, duration)
-                                    }), "h:mm bbb", esOptions)));
-            }));
-    } else {
-      tmp$1 = "Service is not available today";
-    }
-  }
   return React.createElement("main", {
               className: "Book"
             }, React.createElement("article", {
@@ -185,22 +248,14 @@ function ServiceBook(Props) {
                         flexWrap: "wrap",
                         justifyContent: "space-evenly"
                       }
-                    }, tmp), React.createElement("section", {
-                      className: "Calendar"
-                    }, React.createElement("h3", {
-                          className: "Calendar-month"
-                        }, month.charAt(0).toUpperCase() + month.slice(1)), React.createElement("div", {
-                          className: "Calendar-dow"
-                        }, React.createElement("div", undefined, "Dom"), React.createElement("div", undefined, "Lun"), React.createElement("div", undefined, "Mar"), React.createElement("div", undefined, "Mie"), React.createElement("div", undefined, "Jue"), React.createElement("div", undefined, "Vie"), React.createElement("div", undefined, "Sab")), React.createElement("div", {
-                          className: "Calendar-grid"
-                        }, Belt_Array.map(days, (function (d) {
-                                return React.createElement("button", {
-                                            key: DateFns.getDayOfYear(d).toString(),
-                                            className: dowClass(d)
-                                          }, React.createElement("time", {
-                                                dateTime: DateFns.format(d, "y-MM-dd", esOptions)
-                                              }, DateFns.format(d, "d", esOptions)));
-                              })))), React.createElement("aside", {
+                    }, typeof product === "number" ? (
+                        product !== 0 ? "Loading..." : "Service preview and input data"
+                      ) : React.createElement(ServiceBook$ServicePreview, {
+                            item: product._0
+                          })), React.createElement(ServiceBook$ServiceCalendar, {
+                      date: date,
+                      onSelect: onSelectDate
+                    }), React.createElement("aside", {
                       style: {
                         display: "flex",
                         fontSize: ".8em",
@@ -209,12 +264,26 @@ function ServiceBook(Props) {
                         flexDirection: "column",
                         justifyContent: "space-around"
                       }
-                    }, tmp$1), React.createElement("footer", undefined, "Comfirmation")));
+                    }, typeof product === "number" ? (
+                        product !== 0 ? "Loading..." : "Available spots"
+                      ) : React.createElement(ServiceBook$ServiceSlots, {
+                            date: date,
+                            duration: product._0.duration,
+                            spots: product._1,
+                            onSelect: onSelectSlot
+                          })), React.createElement("footer", undefined, "Comfirmation " + (
+                      match$1[0] ? "Done!" : "Open"
+                    ))));
 }
 
 var make = ServiceBook;
 
 export {
+  esOptions ,
+  esFormatDate ,
+  ServiceCalendar ,
+  ServiceSlots ,
+  ServicePreview ,
   make ,
   
 }
