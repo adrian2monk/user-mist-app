@@ -6,9 +6,13 @@ import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 import * as DateFns from "date-fns";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Caml_int32 from "rescript/lib/es6/caml_int32.js";
+import SuccessSvg from "./success.svg";
 import * as Locale from "date-fns/locale";
 import * as Firestore from "firebase/firestore";
+import * as RescriptReactRouter from "@rescript/react/src/RescriptReactRouter.bs.js";
 import * as ServiceSearch$RescriptProjectTemplate from "./ServiceSearch.bs.js";
+
+var success = SuccessSvg;
 
 import './ServiceBook.css';
 ;
@@ -20,6 +24,85 @@ var esOptions = {
 function esFormatDate(d, f) {
   return DateFns.format(d, f, esOptions);
 }
+
+function ServiceBook$ServiceForm(Props) {
+  var date = Props.date;
+  var isBooked = Props.isBooked;
+  var item = Props.item;
+  var onBook = Props.onBook;
+  var match = React.useState(function () {
+        return "";
+      });
+  var setName = match[1];
+  var name = match[0];
+  var match$1 = React.useState(function () {
+        return "";
+      });
+  var setEmail = match$1[1];
+  var email = match$1[0];
+  var match$2 = React.useState(function () {
+        return "";
+      });
+  var setComment = match$2[1];
+  var comment = match$2[0];
+  var onClick = function (e) {
+    e.preventDefault();
+    return Curry._1(onBook, {
+                state: "PENDING",
+                service: item.id,
+                expert: item.expert,
+                client: {
+                  name: name,
+                  email: email
+                },
+                comment: comment,
+                date: date,
+                time_to: DateFns.format(DateFns.add(date, {
+                          minutes: item.duration
+                        }), "H:mm", esOptions),
+                time_from: DateFns.format(date, "H:mm", esOptions)
+              });
+  };
+  return React.createElement("form", {
+              className: "Book-confirmation"
+            }, React.createElement("label", undefined, "Nombre"), React.createElement("input", {
+                  id: "name",
+                  type: "text",
+                  value: name,
+                  onChange: (function (e) {
+                      return Curry._1(setName, (function (param) {
+                                    return e.target.value;
+                                  }));
+                    })
+                }), React.createElement("label", undefined, "Email"), React.createElement("input", {
+                  id: "email",
+                  type: "email",
+                  value: email,
+                  onChange: (function (e) {
+                      return Curry._1(setEmail, (function (param) {
+                                    return e.target.value;
+                                  }));
+                    })
+                }), React.createElement("label", undefined, "Comentarios"), React.createElement("textarea", {
+                  id: "comment",
+                  cols: 30,
+                  rows: 5,
+                  value: comment,
+                  onChange: (function (e) {
+                      return Curry._1(setComment, (function (param) {
+                                    return e.target.value;
+                                  }));
+                    })
+                }), React.createElement("button", {
+                  className: "Book-primary",
+                  disabled: !isBooked,
+                  onClick: onClick
+                }, "Solicitar cita"));
+}
+
+var ServiceForm = {
+  make: ServiceBook$ServiceForm
+};
 
 function ServiceBook$ServiceCalendar(Props) {
   var date = Props.date;
@@ -186,6 +269,7 @@ function ServiceBook(Props) {
       });
   var setDate = match$2[1];
   var date = match$2[0];
+  var db = Firestore.getFirestore();
   var onSelectDate = function (d) {
     Curry._1(setBooked, (function (param) {
             return false;
@@ -202,10 +286,21 @@ function ServiceBook(Props) {
                   return d;
                 }));
   };
-  var db = Firestore.getFirestore();
+  var onBook = function (b) {
+    Firestore.setDoc(Firestore.doc(Firestore.collection(db, "bookings")), b);
+    return Curry._1(setProduct, (function (param) {
+                  return /* Booked */1;
+                }));
+  };
+  var onHomeClick = function (param) {
+    return RescriptReactRouter.push("/");
+  };
+  var onBookClick = function (param) {
+    return RescriptReactRouter.replace("/service/" + serviceId + "/booking");
+  };
   React.useEffect((function () {
           Curry._1(setProduct, (function (param) {
-                  return /* Loading */1;
+                  return /* Loading */2;
                 }));
           Firestore.getDoc(Firestore.doc(db, "services", serviceId)).then(function (docSnapshot) {
                   if (docSnapshot.exists) {
@@ -217,7 +312,15 @@ function ServiceBook(Props) {
                           var schedule = docUserSnap.exists ? docUserSnap.data(serverOptions).schedule : [];
                           Curry._1(setProduct, (function (param) {
                                   return /* Active */{
-                                          _0: service,
+                                          _0: {
+                                            categories: service.categories,
+                                            expert: service.expert,
+                                            desc: service.desc,
+                                            duration: service.duration,
+                                            type_: service.type_,
+                                            price: service.price,
+                                            id: serviceId
+                                          },
                                           _1: schedule
                                         };
                                 }));
@@ -234,57 +337,90 @@ function ServiceBook(Props) {
               });
           
         }), []);
+  var tmp;
+  if (typeof product === "number") {
+    switch (product) {
+      case /* Empty */0 :
+          tmp = "No data available";
+          break;
+      case /* Booked */1 :
+          tmp = React.createElement("section", {
+                className: "Booked"
+              }, React.createElement("img", {
+                    alt: "Success check mark",
+                    src: success
+                  }), React.createElement("h1", undefined, "Cita creada con éxito"), React.createElement("button", {
+                    className: "Booked-outline",
+                    onClick: onBookClick
+                  }, "Agenda otra"), React.createElement("a", {
+                    className: "Booked-link",
+                    href: "",
+                    onClick: onHomeClick
+                  }, "Listado de servicios"));
+          break;
+      case /* Loading */2 :
+          tmp = "Loading...";
+          break;
+      
+    }
+  } else {
+    var item = product._0;
+    tmp = React.createElement(React.Fragment, undefined, React.createElement("aside", {
+              className: "Book-preview",
+              style: {
+                display: "flex",
+                fontSize: ".8em",
+                maxWidth: "calc(30vw - 150px)",
+                padding: "1em",
+                alignItems: "center",
+                flexWrap: "wrap",
+                justifyContent: "space-evenly"
+              }
+            }, React.createElement(ServiceBook$ServicePreview, {
+                  item: item
+                }), React.createElement(ServiceBook$ServiceForm, {
+                  date: date,
+                  isBooked: match$1[0],
+                  item: item,
+                  onBook: onBook
+                })), React.createElement(ServiceBook$ServiceCalendar, {
+              date: date,
+              onSelect: onSelectDate
+            }), React.createElement("aside", {
+              className: "Book-slots",
+              style: {
+                display: "flex",
+                fontSize: ".8em",
+                padding: "1em",
+                alignItems: "center",
+                flexDirection: "column",
+                justifyContent: "flex-start"
+              }
+            }, React.createElement(ServiceBook$ServiceSlots, {
+                  date: date,
+                  duration: item.duration,
+                  spots: product._1,
+                  onSelect: onSelectSlot
+                })));
+  }
   return React.createElement("main", {
               className: "Book"
             }, React.createElement("article", {
                   className: "Book-card"
-                }, React.createElement("aside", {
-                      style: {
-                        display: "flex",
-                        fontSize: ".8em",
-                        maxWidth: "calc(30vw - 150px)",
-                        padding: "1em",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        justifyContent: "space-evenly"
-                      }
-                    }, typeof product === "number" ? (
-                        product !== 0 ? "Loading..." : "Service preview and input data"
-                      ) : React.createElement(ServiceBook$ServicePreview, {
-                            item: product._0
-                          })), React.createElement(ServiceBook$ServiceCalendar, {
-                      date: date,
-                      onSelect: onSelectDate
-                    }), React.createElement("aside", {
-                      style: {
-                        display: "flex",
-                        fontSize: ".8em",
-                        padding: "1em",
-                        alignItems: "center",
-                        flexDirection: "column",
-                        justifyContent: "space-around"
-                      }
-                    }, typeof product === "number" ? (
-                        product !== 0 ? "Loading..." : "Available spots"
-                      ) : React.createElement(ServiceBook$ServiceSlots, {
-                            date: date,
-                            duration: product._0.duration,
-                            spots: product._1,
-                            onSelect: onSelectSlot
-                          })), React.createElement("footer", undefined, "Comfirmation " + (
-                      match$1[0] ? "Done!" : "Open"
-                    ))));
+                }, tmp));
 }
 
 var make = ServiceBook;
 
 export {
+  success ,
   esOptions ,
   esFormatDate ,
+  ServiceForm ,
   ServiceCalendar ,
   ServiceSlots ,
   ServicePreview ,
   make ,
   
 }
-/*  Not a pure module */
+/* success Not a pure module */

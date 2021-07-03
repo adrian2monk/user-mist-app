@@ -1,3 +1,4 @@
+@module("./success.svg") external success: string = "default"
 
 %%raw(`import './ServiceBook.css';`)
 
@@ -23,8 +24,25 @@ type expert = {
   schedule: array<interval>
 }
 
+type client = {
+  name: string,
+  email: string
+}
+
+type booking = {
+  state: string,
+  service: string,
+  expert: ServiceSearch.user,
+  client: client,
+  comment: string,
+  date: Js.Date.t,
+  time_to: string,
+  time_from: string,
+}
+
 type state = 
   | Empty 
+  | Booked 
   | Loading 
   | Active(ServiceSearch.service, array<interval>)
 
@@ -66,9 +84,15 @@ type state =
 
 @module("firebase/firestore") external firestore: unit => 'a = "getFirestore"
 
+@module("firebase/firestore") external collection: (. 'a, string) => 'b = "collection"
+
 @module("firebase/firestore") external doc: (. 'a, string, string) => 'b = "doc"
 
+@module("firebase/firestore") external ref: (. 'b) => 'c = "doc"
+
 @module("firebase/firestore") external get: (. 'b) => Js.Promise.t<'c> = "getDoc"
+
+@module("firebase/firestore") external set: (. 'b, booking) => Js.Promise.t<'c> = "setDoc"
 
 @send external dataService: ('b, 'd) => ServiceSearch.service = "data"
 
@@ -77,6 +101,50 @@ type state =
 let esOptions = {locale: es}
 
 let esFormatDate = (d, f) => format(d, f, esOptions)
+
+module ServiceForm = {
+  @react.component
+  let make = (~date: Js.Date.t, ~isBooked: bool, ~item: ServiceSearch.service, ~onBook) => {
+
+    let (name, setName) = React.useState(_ => "") 
+
+    let (email, setEmail) = React.useState(_ => "") 
+
+    let (comment, setComment) = React.useState(_ => "") 
+
+    let getValue = (e) => {
+      let t = ReactEvent.Form.target(e)
+      t["value"]
+    }
+
+    let onClick = (e) => {
+      ReactEvent.Mouse.preventDefault(e) 
+      onBook({
+        date,
+        comment,
+        client: {
+          name,
+          email
+        },
+        time_from: esFormatDate(date, "H:mm"),
+        time_to: esFormatDate(add(date, { minutes: item.duration }), "H:mm"),
+        expert: item.expert,
+        service: item.id,
+        state: "PENDING"
+      })
+    }
+
+    <form className="Book-confirmation">
+      <label>{React.string("Nombre")}</label>
+      <input id="name" type_="text" value={name} onChange={e => setName(_ => getValue(e))} />
+      <label>{React.string("Email")}</label>
+      <input id="email" type_="email" value={email} onChange={e => setEmail(_ => getValue(e))} />
+      <label>{React.string("Comentarios")}</label>
+      <textarea id="comment" rows=5 cols=30 value={comment} onChange={e => setComment(_ => getValue(e))}></textarea>
+      <button className="Book-primary" disabled={!isBooked} onClick>{React.string("Solicitar cita")}</button>
+    </form>
+  }
+}
 
 module ServiceCalendar = {
   @react.component
@@ -191,17 +259,30 @@ let make = (~serviceId: string) => {
 
   let (date, setDate) = React.useState(_ => Js.Date.make()) 
 
+  let db = firestore()
+
   let onSelectDate = (d) => {
-    setBooked((_) => false)
-    setDate((_) => d)
+    setBooked(_ => false)
+    setDate(_ => d)
   }
 
   let onSelectSlot = (d) => {
-    setBooked((_) => true)
-    setDate((_) => d)
+    setBooked(_ => true)
+    setDate(_ => d)
   }
 
-  let db = firestore()
+  let onBook = (b) => {
+    set(. ref(. collection(. db, "bookings")), b)->ignore
+    setProduct(_ => Booked)
+  }
+
+  let onHomeClick = (_) => {
+    RescriptReactRouter.push("/")
+  }
+
+  let onBookClick = (_) => {
+    RescriptReactRouter.replace("/service/" ++ serviceId ++ "/booking")
+  }
 
   React.useEffect0(() => {
     setProduct(_ => Loading)
@@ -222,7 +303,7 @@ let make = (~serviceId: string) => {
           } else {
             []
           }
-          setProduct(_ => Active(service, schedule))
+          setProduct(_ => Active({ ...service, id: serviceId }, schedule))
           Js.Promise.resolve(())
         }, get(. doc(. db, "experts", service.expert.id)))->ignore
       }
@@ -233,18 +314,31 @@ let make = (~serviceId: string) => {
 
   <main className="Book">
     <article className="Book-card">
-      <aside style={ReactDOM.Style.make(~display="flex", ~flexWrap="wrap", ~alignItems="center", ~justifyContent="space-evenly", ~fontSize=".8em", ~padding="1em", ~maxWidth="calc(30vw - 150px)", ())}>{switch product {
+      {switch product {
       | Loading => React.string("Loading...")
-      | Empty => React.string("Service preview and input data")
-      | Active(item, _) => <ServicePreview item />
-      }}</aside>
-      <ServiceCalendar date onSelect=onSelectDate />
-      <aside style={ReactDOM.Style.make(~display="flex", ~flexDirection="column", ~alignItems="center", ~justifyContent="space-around", ~fontSize=".8em", ~padding="1em", ())}>{switch product {
-      | Loading => React.string("Loading...")
-      | Empty => React.string("Available spots")
-      | Active({ duration }, spots) => <ServiceSlots date duration spots onSelect=onSelectSlot />
-      }}</aside>
-      <footer>{React.string("Comfirmation " ++ (isBooked ? "Done!" : "Open"))}</footer>
+      | Empty => React.string("No data available")
+      | Booked => {
+        <section className="Booked">
+          <img src=success alt="Success check mark" />
+          <h1>{React.string(`Cita creada con éxito`)}</h1>
+          <button className="Booked-outline" onClick=onBookClick>{React.string("Agenda otra")}</button>
+          <a href="" className="Booked-link" onClick=onHomeClick>{React.string("Listado de servicios")}</a>
+        </section>
+      }
+      | Active(item, spots) => {
+        <>
+          <aside className="Book-preview" style={ReactDOM.Style.make(~display="flex", ~flexWrap="wrap", ~alignItems="center", ~justifyContent="space-evenly", ~fontSize=".8em", ~padding="1em", ~maxWidth="calc(30vw - 150px)", ())}>
+            <ServicePreview item />
+            <ServiceForm date isBooked item onBook />
+          </aside>
+          <ServiceCalendar date onSelect=onSelectDate />
+          <aside className="Book-slots" style={ReactDOM.Style.make(~display="flex", ~flexDirection="column", ~alignItems="center", ~justifyContent="flex-start", ~fontSize=".8em", ~padding="1em", ())}>
+            <ServiceSlots date duration=item.duration spots onSelect=onSelectSlot />
+          </aside>
+          // <footer style={ReactDOM.Style.make(~textAlign="center", ())}>{React.string("Copyright Mist")}</footer>
+        </>
+        }
+      }} 
     </article>
   </main>
 }

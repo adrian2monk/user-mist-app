@@ -15,8 +15,66 @@
   background-color: #FFFFFF;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
 }
+.Book-card aside.Book-preview {
+  margin: -1.3em 0;
+  border-right: 0.1px solid rgba(163, 164, 176, 0.1);
+}
+.Book-card aside.Book-slots {
+  max-height: 60vh;
+  overflow: scroll;
+}
 .Book-card footer {
   grid-column: 1 / 4;
+}
+.Book-confirmation {
+  padding: 1em;
+  box-sizing: border-box;
+  max-width: 20vw;
+  color: #606060;
+  display: flex;
+  flex-direction: column;
+}
+.Book-confirmation label {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-top: 1em;
+  margin-bottom: .5em;
+}
+.Book-confirmation input,
+.Book-confirmation textarea {
+  padding: .8em;
+  border-radius: .285em;
+  border: 0.5px solid #C4C4C4;
+}
+.Book-confirmation input:focus-visible,
+.Book-confirmation textarea:focus-visible {
+  outline-color: #FFD292;
+}
+.Book-confirmation textarea {
+  resize: none;
+}
+.Book-confirmation button {
+  appearance: none;
+  outline: none;
+  border: 0;
+  text-align: center;
+  color: #FFFFFF;
+  background: #FFA41D;
+  border-radius: .285em;
+  padding: .8em 3em;
+  margin-top: 1em;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 1s ease;
+  align-self: flex-end;
+  flex-shrink: 3;
+}
+.Book-confirmation button:disabled {
+  opacity: .7;
+  cursor: default;
+}
+.Calendar {
+  margin: 0 2em;
 }
 .Calendar-month {
   color: #4F4F4F;
@@ -90,6 +148,7 @@ button.Slot {
   outline: none;
   appearance: none;
   background: transparent;
+  margin: .5em 0;
   padding: .5em 1em;
   border: 0.6px solid #606060;
   box-sizing: border-box;
@@ -105,4 +164,39 @@ button.Slot:active,
 button.Slot.Slot-selected {
   background-color: #0D919D;
   color: #FFFFFF;
+}
+.Booked {
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  color: #606060;
+  padding: 2em;
+}
+.Booked-outline {
+  --fg: #2A2C43;
+  color: var(--cl, var(--fg));
+  appearance: none;
+  background: #FFFFFF;
+  border: 0.5px solid var(--cl, var(--fg));
+  border-radius: .285em;
+  padding: .8em 3em;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  cursor: pointer;
+}
+.Booked-outline:hover {
+  --cl: #0D919D;
+}
+.Booked-link {
+  --fg: #606060;
+  color: var(--bc, var(--fg));
+  font-size: .8em;
+  font-weight: 300;
+  line-height: 1.2em;
+  letter-spacing: 0.03em;
+  text-decoration-color: var(--bc, var(--fg));
+  transition: color .1s ease-in;
+}
+.Booked-link:hover {
+  --bc: #FFA41D;
 }
