@@ -280,9 +280,9 @@ let make = (~serviceId: string) => {
     RescriptReactRouter.push("/")
   }
 
-  let onBookClick = (_) => {
-    RescriptReactRouter.replace("/service/" ++ serviceId ++ "/booking")
-  }
+  // let onBookClick = (_) => {
+  //   RescriptReactRouter.push("/service/" ++ serviceId ++ "/booking")
+  // }
 
   React.useEffect0(() => {
     setProduct(_ => Loading)
@@ -321,8 +321,8 @@ let make = (~serviceId: string) => {
         <section className="Booked">
           <img src=success alt="Success check mark" />
           <h1>{React.string(`Cita creada con éxito`)}</h1>
-          <button className="Booked-outline" onClick=onBookClick>{React.string("Agenda otra")}</button>
-          <a href="" className="Booked-link" onClick=onHomeClick>{React.string("Listado de servicios")}</a>
+          <button className="Booked-outline" onClick=onHomeClick>{React.string("Agenda otra")}</button>
+          // <a href="" className="Booked-link" onClick=onHomeClick>{React.string("Listado de servicios")}</a>
         </section>
       }
       | Active(item, spots) => {

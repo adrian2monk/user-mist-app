@@ -295,9 +295,6 @@ function ServiceBook(Props) {
   var onHomeClick = function (param) {
     return RescriptReactRouter.push("/");
   };
-  var onBookClick = function (param) {
-    return RescriptReactRouter.replace("/service/" + serviceId + "/booking");
-  };
   React.useEffect((function () {
           Curry._1(setProduct, (function (param) {
                   return /* Loading */2;
@@ -351,12 +348,8 @@ function ServiceBook(Props) {
                     src: success
                   }), React.createElement("h1", undefined, "Cita creada con éxito"), React.createElement("button", {
                     className: "Booked-outline",
-                    onClick: onBookClick
-                  }, "Agenda otra"), React.createElement("a", {
-                    className: "Booked-link",
-                    href: "",
                     onClick: onHomeClick
-                  }, "Listado de servicios"));
+                  }, "Agenda otra"));
           break;
       case /* Loading */2 :
           tmp = "Loading...";
