@@ -5,3 +5,4 @@
 /build/dist
 .bsb.lock
 .merlin
+.firebase
