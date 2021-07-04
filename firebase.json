@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "mist-user",
     "public": "build",
     "ignore": [
       "firebase.json",
