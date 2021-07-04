@@ -1,5 +1,7 @@
 .DS_Store
 /node_modules/
 /lib/
+/build/_snowpack
+/build/dist
 .bsb.lock
 .merlin
